@@ -22,6 +22,7 @@ type State struct {
 	Total    int     `json:"total"`
 	Speed    string  `json:"speed"`
 	Progress float64 `json:"progress"`
+	Filename string  `json:"filename"`
 }
 
 // Log contains raw stderr and stdout outputs
@@ -101,8 +102,13 @@ func processStdout(task *Task, stdout io.Reader) {
 			task.state.Speed = getTaskSpeed(speedMatcher.ExtractAllStringSubmatch(logStr, 2))
 		}
 
+		if isFilename(logStr) {
+			task.state.Filename = logStr
+		}
+
 		task.log.Stdout += logStr + "\n"
 	}
+
 }
 
 func processStderr(task *Task, stderr io.Reader) {
@@ -137,4 +143,66 @@ func getTaskSpeed(data [][]string) string {
 	}
 
 	return data[1][1]
+}
+
+// # Call this if you want to filter out verbose messages (-v or -vv) from
+// # the output of an rsync run (whittling the output down to just the file
+// # messages).  This isn't needed if you use -i without -v.
+// filter_outfile() {
+//     sed -e '/^building file list /d' \
+// 	-e '/^sending incremental file list/d' \
+// 	-e '/^created directory /d' \
+// 	-e '/^done$/d' \
+// 	-e '/ --whole-file$/d' \
+// 	-e '/^total: /d' \
+// 	-e '/^client charset: /d' \
+// 	-e '/^server charset: /d' \
+// 	-e '/^$/,$d' \
+// 	<"$outfile" >"$outfile.new"
+//     mv "$outfile.new" "$outfile"
+// }
+
+func isFilename(str string) bool {
+
+	if str == "" {
+		return false
+	}
+
+	if strings.HasPrefix(str, "      ") {
+		return false
+	}
+
+	if strings.HasPrefix(str, " ") {
+		return false
+	}
+
+	verbose := []string{
+		"building file list ",
+		"sending ",
+		"created ",
+		"done",
+		"total ",
+		"total: ",
+		"client ",
+		"server ",
+		"to consider",
+		"to-chk=",
+		"to-check=",
+	}
+
+	for _, v := range verbose {
+		if strings.Contains(str, v) {
+			return false
+		}
+	}
+
+	if strings.HasPrefix(str, "sent") {
+		return false
+	}
+
+	if strings.HasSuffix(str, "/") {
+		return false
+	}
+
+	return true
 }
