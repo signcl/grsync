@@ -75,7 +75,6 @@ func NewTask(source, destination string, rsyncOptions RsyncOptions) *Task {
 	// Force set required options
 	rsyncOptions.HumanReadable = true
 	rsyncOptions.Partial = true
-	rsyncOptions.Progress = true
 	rsyncOptions.Archive = true
 
 	return &Task{
