@@ -2,6 +2,7 @@ package grsync
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 	"math"
 	"strconv"
@@ -45,6 +46,11 @@ func (t Task) Log() Log {
 	}
 }
 
+// String return the actual exec cmd string of the task
+func (t Task) String() string {
+	return t.rsync.cmd.String()
+}
+
 // Run starts rsync process with options
 func (t *Task) Run() error {
 	stderr, err := t.rsync.StderrPipe()
@@ -84,6 +90,29 @@ func NewTask(source, destination string, rsyncOptions RsyncOptions) *Task {
 	}
 }
 
+func scanProgressLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexAny(data, "\r\n"); i >= 0 {
+		if data[i] == '\n' {
+			// We have a line terminated by single newline.
+			return i + 1, data[0:i], nil
+		}
+		advance = i + 1
+		if len(data) > i+1 && data[i+1] == '\n' {
+			advance += 1
+		}
+		return advance, data[0:i], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
+}
+
 func processStdout(wg *sync.WaitGroup, task *Task, stdout io.Reader) {
 	const maxPercents = float64(100)
 	const minDivider = 1
@@ -96,6 +125,7 @@ func processStdout(wg *sync.WaitGroup, task *Task, stdout io.Reader) {
 	// Extract data from strings:
 	//         999,999 99%  999.99kB/s    0:00:59 (xfr#9, to-chk=999/9999)
 	scanner := bufio.NewScanner(stdout)
+	scanner.Split(scanProgressLines)
 	for scanner.Scan() {
 		logStr := scanner.Text()
 		if progressMatcher.Match(logStr) {
@@ -147,11 +177,11 @@ func getTaskProgress(remTotalString string) (int, int) {
 }
 
 func getTaskSpeed(data [][]string) string {
-	if len(data) < 2 || len(data[1]) < 2 {
+	if len(data) < 1 || len(data[0]) < 1 {
 		return ""
 	}
 
-	return data[1][1]
+	return data[0][0]
 }
 
 // # Call this if you want to filter out verbose messages (-v or -vv) from
