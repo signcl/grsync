@@ -35,7 +35,7 @@ func TestTaskProgressWithDifferentChkID(t *testing.T) {
 
 func TestTaskSpeedParse(t *testing.T) {
 	speedMatcher := newMatcher(`(\d+\.\d+.{2}\/s)`)
-	const taskInfoString = `0.00kB/s \n 999,999 99%  999.99kB/s    0:00:59 (xfr#9, ir-chk=999/9999)`
+	const taskInfoString = `999,999 99%  999.99kB/s    0:00:59 (xfr#9, ir-chk=999/9999)`
 	speed := getTaskSpeed(speedMatcher.ExtractAllStringSubmatch(taskInfoString, 2))
 	assert.Equal(t, "999.99kB/s", speed)
 }
