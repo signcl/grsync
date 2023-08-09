@@ -5,7 +5,7 @@
 
 Repository contains some helpful tools:
 - raw rsync wrapper
-- rsync task — wrapper which provide important information about rsync task: progress, remain items, total items and speed
+- rsync task — wrapper which provide important information about rsync task: progress, remain items, total items and speed
 
 ## Task wrapper usage
 

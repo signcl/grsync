@@ -187,6 +187,8 @@ type RsyncOptions struct {
 	Info string
 	// Exclude --exclude="", exclude remote paths.
 	Exclude []string
+	// ExcludeFrom --exclude-from="", read exclude patterns from FILE
+	ExcludeFrom string
 	// Include --include="", include remote paths.
 	Include []string
 	// Filter --filter="", include filter rule.
@@ -595,6 +597,10 @@ func getArguments(options RsyncOptions) []string {
 		for _, pattern := range options.Exclude {
 			arguments = append(arguments, fmt.Sprintf("--exclude=%s", pattern))
 		}
+	}
+
+	if options.ExcludeFrom != "" {
+		arguments = append(arguments, fmt.Sprintf("--exclude-from=%s", options.ExcludeFrom))
 	}
 
 	if options.Filter != "" {
