@@ -25,6 +25,9 @@ type State struct {
 	Speed    string  `json:"speed"`
 	Progress float64 `json:"progress"`
 	Filename string  `json:"filename"`
+
+	TransferedBytes   int64 `json:"transfered_bytes"`
+	TransferedPercent int   `json:"transfered_percent"` // 0 ~ 100
 }
 
 // Log contains raw stderr and stdout outputs
@@ -121,9 +124,11 @@ func processStdout(wg *sync.WaitGroup, task *Task, stdout io.Reader) {
 
 	progressMatcher := newMatcher(`\(.+-chk=(\d+.\d+)`)
 	speedMatcher := newMatcher(`(\d+\.\d+.{2}\/s)`)
+	transferedMatcher := newMatcher(`(\S+.*)%`)
 
 	// Extract data from strings:
 	//         999,999 99%  999.99kB/s    0:00:59 (xfr#9, to-chk=999/9999)
+	//          2.39G  68%  659.73MB/s    0:00:03 (xfr#7217, to-chk=1113/10003)
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(scanProgressLines)
 	for scanner.Scan() {
@@ -139,6 +144,9 @@ func processStdout(wg *sync.WaitGroup, task *Task, stdout io.Reader) {
 			task.state.Speed = getTaskSpeed(speedMatcher.ExtractAllStringSubmatch(logStr, 2))
 		}
 
+		if transferedMatcher.Match(logStr) {
+			task.state.TransferedBytes, task.state.TransferedPercent = getTaskTransfered(transferedMatcher.Extract(logStr))
+		}
 		if isFilename(logStr) {
 			task.state.Filename = logStr
 		}
@@ -182,6 +190,50 @@ func getTaskSpeed(data [][]string) string {
 	}
 
 	return data[0][0]
+}
+
+func getTaskTransfered(transfered string) (transferedBytes int64, transferedPercent int) {
+	info := strings.Split(transfered, " ")
+	if len(info) < 2 {
+		return 0, 0
+	}
+	numberStr := info[0]
+	percentStr := info[len(info)-1]
+
+	transferedPercent, _ = strconv.Atoi(percentStr)
+
+	var unit string
+	var number float64
+
+	units := []string{"KB", "K", "MB", "M", "GB", "G", "TB", "T"}
+	for _, u := range units {
+		s := info[0]
+
+		if strings.HasSuffix(s, u) {
+			unit = u
+			numberStr = s[:len(s)-len(u)]
+			break
+		}
+	}
+
+	numberStr = strings.ReplaceAll(numberStr, ",", "")
+	numberStr = strings.TrimSpace(numberStr)
+	number, _ = strconv.ParseFloat(numberStr, 64)
+
+	switch unit {
+	case "KB", "K":
+		transferedBytes = int64(number * 1024)
+	case "MB", "M":
+		transferedBytes = int64(number * 1024 * 1024)
+	case "GB", "G":
+		transferedBytes = int64(number * 1024 * 1024 * 1024)
+	case "TB", "T":
+		transferedBytes = int64(number * 1024 * 1024 * 1024 * 1024)
+	default:
+		transferedBytes = int64(number)
+	}
+
+	return
 }
 
 // # Call this if you want to filter out verbose messages (-v or -vv) from

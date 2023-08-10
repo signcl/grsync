@@ -39,3 +39,30 @@ func TestTaskSpeedParse(t *testing.T) {
 	speed := getTaskSpeed(speedMatcher.ExtractAllStringSubmatch(taskInfoString, 2))
 	assert.Equal(t, "999.99kB/s", speed)
 }
+
+func TestTaskTransfered(t *testing.T) {
+	transferedMatcher := newMatcher(`(\S+.*)%`)
+
+	tests := []struct {
+		info          string
+		expectSize    int64
+		expectPercent int
+	}{
+		{
+			info:          `123,456 78%  87.65kB/s    0:00:59 (xfr#9, to-chk=999/9999)`,
+			expectSize:    int64(123456),
+			expectPercent: 78,
+		},
+		{
+			info:          `21.90G  98%  428.46MB/s    0:00:48 (xfr#9416, ir-chk=3383/13809)`,
+			expectSize:    23514945945,
+			expectPercent: 98,
+		},
+	}
+
+	for _, tt := range tests {
+		size, percent := getTaskTransfered(transferedMatcher.Extract(tt.info))
+		assert.Equal(t, tt.expectSize, size)
+		assert.Equal(t, tt.expectPercent, percent)
+	}
+}
