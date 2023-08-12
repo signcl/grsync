@@ -232,6 +232,11 @@ func (r Rsync) Run() error {
 	return r.cmd.Wait()
 }
 
+// GetCmd return the underlying exec.Cmd.
+func (r Rsync) GetCmd() *exec.Cmd {
+	return r.cmd
+}
+
 // NewRsync returns task with described options
 func NewRsync(source, destination string, options RsyncOptions) *Rsync {
 	arguments := append(getArguments(options), source, destination)

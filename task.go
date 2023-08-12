@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"math"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -77,6 +78,11 @@ func (t *Task) Run() error {
 	wg.Wait()
 
 	return err
+}
+
+// GetCmd return the underlying exec.Cmd.
+func (r Task) GetCmd() *exec.Cmd {
+	return r.rsync.cmd
 }
 
 // NewTask returns new rsync task
