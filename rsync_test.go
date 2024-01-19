@@ -119,18 +119,18 @@ func TestParseArguments(t *testing.T) {
 		assert.Contains(t, args, "--safe-links")
 	})
 
-	t.Run("--copy-dir-links", func(t *testing.T) {
+	t.Run("--copy-dirlinks", func(t *testing.T) {
 		args := getArguments(RsyncOptions{
 			CopyDirLinks: true,
 		})
-		assert.Contains(t, args, "--copy-dir-links")
+		assert.Contains(t, args, "--copy-dirlinks")
 	})
 
-	t.Run("--keep-dir-links", func(t *testing.T) {
+	t.Run("--keep-dirlinks", func(t *testing.T) {
 		args := getArguments(RsyncOptions{
 			KeepDirLinks: true,
 		})
-		assert.Contains(t, args, "--keep-dir-links")
+		assert.Contains(t, args, "--keep-dirlinks")
 	})
 
 	t.Run("--hard-links", func(t *testing.T) {

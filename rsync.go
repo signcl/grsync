@@ -325,11 +325,11 @@ func getArguments(options RsyncOptions) []string {
 	}
 
 	if options.CopyDirLinks {
-		arguments = append(arguments, "--copy-dir-links")
+		arguments = append(arguments, "--copy-dirlinks")
 	}
 
 	if options.KeepDirLinks {
-		arguments = append(arguments, "--keep-dir-links")
+		arguments = append(arguments, "--keep-dirlinks")
 	}
 
 	if options.HardLinks {
