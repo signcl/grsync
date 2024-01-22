@@ -586,6 +586,13 @@ func TestParseArguments(t *testing.T) {
 		assert.Contains(t, args, "--filter=merge_filter.txt")
 	})
 
+	t.Run("--files-from", func(t *testing.T) {
+		args := getArguments(RsyncOptions{
+			FilesFrom: "include_files.txt",
+		})
+		assert.Contains(t, args, "--files-from=include_files.txt")
+	})
+
 	t.Run("--chown", func(t *testing.T) {
 		args := getArguments(RsyncOptions{
 			Chown: "nobody:nobody",

@@ -193,6 +193,8 @@ type RsyncOptions struct {
 	Include []string
 	// Filter --filter="", include filter rule.
 	Filter string
+	// FilesFrom --files-from="", read list of source-file names from FILE
+	FilesFrom string
 	// Chown --chown="", chown on receipt.
 	Chown string
 
@@ -610,6 +612,11 @@ func getArguments(options RsyncOptions) []string {
 
 	if options.Filter != "" {
 		arguments = append(arguments, fmt.Sprintf("--filter=%s", options.Filter))
+	}
+
+	if options.FilesFrom != "" {
+		arguments = append(arguments, fmt.Sprintf("--files-from=%s", options.FilesFrom))
+
 	}
 
 	if options.Chown != "" {
