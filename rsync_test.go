@@ -581,7 +581,7 @@ func TestParseArguments(t *testing.T) {
 
 	t.Run("--filter", func(t *testing.T) {
 		args := getArguments(RsyncOptions{
-			Filter: "merge_filter.txt",
+			Filter: []string{"merge_filter.txt"},
 		})
 		assert.Contains(t, args, "--filter=merge_filter.txt")
 	})

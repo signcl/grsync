@@ -95,7 +95,7 @@ type RsyncOptions struct {
 	Super bool
 	// FakeSuper store/recover privileged attrs using xattrs
 	FakeSuper bool
-	// Sparce handle sparse files efficiently
+	// Sparse handle sparse files efficiently
 	Sparse bool
 	// DryRun perform a trial run with no changes made
 	DryRun bool
@@ -192,7 +192,7 @@ type RsyncOptions struct {
 	// Include --include="", include remote paths.
 	Include []string
 	// Filter --filter="", include filter rule.
-	Filter string
+	Filter []string
 	// FilesFrom --files-from="", read list of source-file names from FILE
 	FilesFrom string
 	// Chown --chown="", chown on receipt.
@@ -610,8 +610,12 @@ func getArguments(options RsyncOptions) []string {
 		arguments = append(arguments, fmt.Sprintf("--exclude-from=%s", options.ExcludeFrom))
 	}
 
-	if options.Filter != "" {
-		arguments = append(arguments, fmt.Sprintf("--filter=%s", options.Filter))
+	if len(options.Filter) > 0 {
+		for _, filter := range options.Filter {
+			if filter != "" {
+				arguments = append(arguments, fmt.Sprintf("--filter=%s", filter))
+			}
+		}
 	}
 
 	if options.FilesFrom != "" {
