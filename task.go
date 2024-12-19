@@ -27,8 +27,8 @@ type State struct {
 	Progress float64 `json:"progress"`
 	Filename string  `json:"filename"`
 
-	TransferedBytes   int64 `json:"transfered_bytes"`
-	TransferedPercent int   `json:"transfered_percent"` // 0 ~ 100
+	TransferredBytes   int64 `json:"transferred_bytes"`
+	TransferredPercent int   `json:"transferred_percent"` // 0 ~ 100
 }
 
 // Log contains raw stderr and stdout outputs
@@ -37,7 +37,7 @@ type Log struct {
 	Stdout string `json:"stdout"`
 }
 
-// State returns inforation about rsync processing task
+// State returns information about rsync processing task
 func (t Task) State() State {
 	return *t.state
 }
@@ -130,7 +130,7 @@ func processStdout(wg *sync.WaitGroup, task *Task, stdout io.Reader) {
 
 	progressMatcher := newMatcher(`\(.+-chk=(\d+.\d+)`)
 	speedMatcher := newMatcher(`(\d+\.\d+.{2}\/s)`)
-	transferedMatcher := newMatcher(`(\S+.*)%`)
+	transferredMatcher := newMatcher(`(\S+.*)%`)
 
 	// Extract data from strings:
 	//         999,999 99%  999.99kB/s    0:00:59 (xfr#9, to-chk=999/9999)
@@ -150,8 +150,8 @@ func processStdout(wg *sync.WaitGroup, task *Task, stdout io.Reader) {
 			task.state.Speed = getTaskSpeed(speedMatcher.ExtractAllStringSubmatch(logStr, 2))
 		}
 
-		if transferedMatcher.Match(logStr) {
-			task.state.TransferedBytes, task.state.TransferedPercent = getTaskTransfered(transferedMatcher.Extract(logStr))
+		if transferredMatcher.Match(logStr) {
+			task.state.TransferredBytes, task.state.TransferredPercent = getTaskTransferred(transferredMatcher.Extract(logStr))
 		}
 		if isFilename(logStr) {
 			task.state.Filename = logStr
@@ -198,15 +198,15 @@ func getTaskSpeed(data [][]string) string {
 	return data[0][0]
 }
 
-func getTaskTransfered(transfered string) (transferedBytes int64, transferedPercent int) {
-	info := strings.Split(transfered, " ")
+func getTaskTransferred(transferred string) (transferredBytes int64, transferredPercent int) {
+	info := strings.Split(transferred, " ")
 	if len(info) < 2 {
 		return 0, 0
 	}
 	numberStr := info[0]
 	percentStr := info[len(info)-1]
 
-	transferedPercent, _ = strconv.Atoi(percentStr)
+	transferredPercent, _ = strconv.Atoi(percentStr)
 
 	var unit string
 	var number float64
@@ -228,15 +228,15 @@ func getTaskTransfered(transfered string) (transferedBytes int64, transferedPerc
 
 	switch unit {
 	case "KB", "K":
-		transferedBytes = int64(number * 1024)
+		transferredBytes = int64(number * 1024)
 	case "MB", "M":
-		transferedBytes = int64(number * 1024 * 1024)
+		transferredBytes = int64(number * 1024 * 1024)
 	case "GB", "G":
-		transferedBytes = int64(number * 1024 * 1024 * 1024)
+		transferredBytes = int64(number * 1024 * 1024 * 1024)
 	case "TB", "T":
-		transferedBytes = int64(number * 1024 * 1024 * 1024 * 1024)
+		transferredBytes = int64(number * 1024 * 1024 * 1024 * 1024)
 	default:
-		transferedBytes = int64(number)
+		transferredBytes = int64(number)
 	}
 
 	return

@@ -40,8 +40,8 @@ func TestTaskSpeedParse(t *testing.T) {
 	assert.Equal(t, "999.99kB/s", speed)
 }
 
-func TestTaskTransfered(t *testing.T) {
-	transferedMatcher := newMatcher(`(\S+.*)%`)
+func TestTaskTransferred(t *testing.T) {
+	transferredMatcher := newMatcher(`(\S+.*)%`)
 
 	tests := []struct {
 		info          string
@@ -61,7 +61,7 @@ func TestTaskTransfered(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		size, percent := getTaskTransfered(transferedMatcher.Extract(tt.info))
+		size, percent := getTaskTransferred(transferredMatcher.Extract(tt.info))
 		assert.Equal(t, tt.expectSize, size)
 		assert.Equal(t, tt.expectPercent, percent)
 	}

@@ -25,17 +25,17 @@ type RsyncOptions struct {
 	RsyncPath string
 	// Verbose increase verbosity
 	Verbose bool
-	// Quet suppress non-error messages
+	// Quiet suppress non-error messages
 	Quiet bool
 	// Checksum skip based on checksum, not mod-time & size
 	Checksum bool
-	// Archve is archive mode; equals -rlptgoD (no -H,-A,-X)
+	// Archive is archive mode; equals -rlptgoD (no -H,-A,-X)
 	Archive bool
 	// Recurse into directories
 	Recursive bool
 	// Relative option to use relative path names
 	Relative bool
-	// NoImliedDirs don't send implied dirs with --relative
+	// NoImpliedDirs don't send implied dirs with --relative
 	NoImpliedDirs bool
 	// Update skip files that are newer on the receiver
 	Update bool
